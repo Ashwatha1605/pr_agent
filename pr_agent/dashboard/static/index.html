@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PR-Agent Telemetry & Token Analytics Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header class="header">
+      <div class="logo-group">
+        <div class="logo-icon">🎮</div>
+        <div class="title-area">
+          <h1>PR-Agent Telemetry & Analytics</h1>
+          <p>Real-time token metrics, game engine tests, and self-healing analysis</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>Live Telemetry</span>
+        </div>
+        <button id="refreshBtn" class="btn btn-secondary">
+          <span>🔄 Refresh</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top KPI Cards Grid -->
+    <section class="metrics-grid">
+      <!-- Total Tokens Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Total Tokens Consumed</span>
+          <div class="metric-icon" style="color: var(--accent-primary);">🪙</div>
+        </div>
+        <div class="metric-value" id="kpiTotalTokens">-</div>
+        <div class="metric-sub">
+          <span id="kpiPromptTokens">- in</span>
+          <span>•</span>
+          <span id="kpiCompTokens">- out</span>
+        </div>
+      </div>
+
+      <!-- PR Runs Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">PR Runs Analyzed</span>
+          <div class="metric-icon" style="color: var(--accent-cyan);">🚀</div>
+        </div>
+        <div class="metric-value" id="kpiTotalRuns">-</div>
+        <div class="metric-sub">
+          <span id="kpiAiCalls">- AI calls</span>
+          <span>•</span>
+          <span>Standalone JSON Storage</span>
+        </div>
+      </div>
+
+      <!-- Pass Rate Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Test Suite Pass Rate</span>
+          <div class="metric-icon" style="color: var(--accent-emerald);">🧪</div>
+        </div>
+        <div class="metric-value" id="kpiPassRate">-</div>
+        <div class="metric-sub">
+          <span id="kpiTestsPassed">- tests</span>
+          <span>•</span>
+          <span>Automated Logic Verifier</span>
+        </div>
+      </div>
+
+      <!-- Self Healing Rate Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Self-Healing Fix Rate</span>
+          <div class="metric-icon" style="color: var(--accent-rose);">🛠️</div>
+        </div>
+        <div class="metric-value" id="kpiFixRate">100%</div>
+        <div class="metric-sub">
+          <span>Automatic Code Patch Synthesis</span>
+        </div>
+      </div>
+
+      <!-- Inference Speed Card -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Avg Inference Speed</span>
+          <div class="metric-icon" style="color: var(--accent-amber);">⚡</div>
+        </div>
+        <div class="metric-value" id="kpiSpeed">-</div>
+        <div class="metric-sub">
+          <span id="kpiPrimaryModel">Primary: -</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Section 1: Tokens & Engines -->
+    <section class="charts-grid">
+      <div class="chart-card">
+        <h3>
+          <span>📊 Token Usage by PR Run (Prompt vs Completion)</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Recent Runs</span>
+        </h3>
+        <div class="chart-wrapper">
+          <canvas id="tokenChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>
+          <span>🎮 Engine & Platform Distribution</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Unreal vs Unity</span>
+        </h3>
+        <div class="chart-wrapper">
+          <canvas id="distChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Section 2: Test Results & Risk Areas -->
+    <section class="charts-grid">
+      <div class="chart-card">
+        <h3>
+          <span>🧪 Test Pass vs Failure Breakdown per Run</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Green (Passed) vs Red (Failed)</span>
+        </h3>
+        <div class="chart-wrapper">
+          <canvas id="testsChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>
+          <span>🛡️ Top Fragile Components & Regression Frequency</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Risk Hotspots</span>
+        </h3>
+        <div class="chart-wrapper">
+          <canvas id="componentsChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Section 3: Performance & Throughput -->
+    <section class="charts-grid">
+      <div class="chart-card">
+        <h3>
+          <span>⏱️ Execution Duration & Latency Trend (Seconds)</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Wall-clock time per PR analysis</span>
+        </h3>
+        <div class="chart-wrapper">
+          <canvas id="durationChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>
+          <span>⚡ Inference Throughput (Tokens / Sec)</span>
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Model generation efficiency</span>
+        </h3>
+        <div class="chart-wrapper">
+          <canvas id="speedChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Runs Table -->
+    <section class="table-card">
+      <div class="table-header-bar">
+        <h3>Recent PR Analyses & Runs</h3>
+        <div class="table-controls">
+          <input 
+            type="text" 
+            id="runSearchInput" 
+            class="search-input" 
+            placeholder="Search by repo, run ID, title..." 
+          />
+          <button class="filter-btn active" data-engine="all">All</button>
+          <button class="filter-btn" data-engine="unreal">Unreal</button>
+          <button class="filter-btn" data-engine="unity">Unity</button>
+        </div>
+      </div>
+
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Run ID</th>
+              <th>Target PR / Repo</th>
+              <th>Engine</th>
+              <th>Test Outcome</th>
+              <th>Tokens Used</th>
+              <th>Throughput</th>
+              <th>Duration</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="runsTableBody">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                Loading telemetry records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

@@ -4,9 +4,34 @@ glob = [
     # Ignore files and directories matching these glob patterns, where a '**/' segment matches
     # zero or more directories and '*' matches across '/', as fnmatch does.
     'vendor/**',
+    '**/*.meta',
+    '**/*.unity',
+    '**/*.prefab',
+    '**/*.mat',
+    '**/*.asset',
+    '**/*.anim',
+    '**/*.controller',
+    'ProjectSettings/**',
+    'Packages/**',
+    'Library/**',
+    'Logs/**',
+    'UserSettings/**',
+    'Build/**',
+    'Builds/**',
+    # Unreal Engine asset & build artifacts
+    '**/*.uasset',
+    '**/*.umap',
+    'Intermediate/**',
+    'Saved/**',
+    'DerivedDataCache/**',
+    'Binaries/**',
+    '.vs/**',
+    '*.sln',
+    '*.vcxproj*',
 ]
 regex = [
     # Ignore files and directories matching these regex patterns.
     # See https://learnbyexample.github.io/python-regex-cheatsheet/
     # for example: regex = ['.*\.toml$']
 ]
+

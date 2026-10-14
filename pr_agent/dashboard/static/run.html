@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PR-Agent Run Telemetry & Diagnosis</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Breadcrumb & Header -->
+    <div class="run-header">
+      <a href="/" class="back-link">← Back to Overview Dashboard</a>
+      
+      <div class="run-title-row">
+        <div class="run-title-area">
+          <h1 id="detailPrTitle">PR Analysis & Telemetry</h1>
+          <div class="run-meta-row">
+            <span class="run-meta-item">
+              <span>📁</span>
+              <strong id="detailRepo">-</strong>
+            </span>
+            <span class="run-meta-item">
+              <span>🆔</span>
+              <code id="detailRunId">-</code>
+            </span>
+            <span class="run-meta-item">
+              <span>⏱️</span>
+              <span id="detailCreatedAt">-</span>
+            </span>
+            <span class="run-meta-item">
+              <span>⏳</span>
+              <span id="detailDuration">-</span>
+            </span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <span id="detailEngineBadge" class="badge">🎮 Engine</span>
+          <span id="detailStatusBadge" class="badge">Status</span>
+          <a id="detailPrBtn" href="#" target="_blank" class="btn btn-secondary btn-sm">
+            <span>View on GitHub ↗</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="run-detail-grid">
+      <!-- Left Sidebar: Tokens & Model Cards -->
+      <aside>
+        <!-- Token Card -->
+        <div class="detail-card">
+          <h3>🪙 Token Usage Breakdown</h3>
+          <div style="height: 180px; margin-bottom: 16px;">
+            <canvas id="runTokenChart"></canvas>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Total Tokens:</span>
+              <strong id="detailTotalTokens" style="color: #ffffff;">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--accent-primary);">Prompt (Input):</span>
+              <span id="detailPromptTokens">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--accent-cyan);">Completion (Output):</span>
+              <span id="detailCompTokens">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Model Card -->
+        <div class="detail-card">
+          <h3>🧠 AI Model & Engine</h3>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Model:</span>
+              <strong id="detailModel" style="color: var(--accent-purple);">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">AI Invocations:</span>
+              <span id="detailAiCalls">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Throughput:</span>
+              <strong id="detailSpeed" style="color: var(--accent-amber);">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-secondary);">Storage Format:</span>
+              <span>Standalone JSON</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Test Suite Summary with Donut Chart -->
+        <div class="detail-card">
+          <h3>🧪 Test Suite Execution</h3>
+          <div style="height: 140px; margin-bottom: 12px;">
+            <canvas id="runTestsDonutChart"></canvas>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center;">
+            <div style="background: rgba(255,255,255,0.03); padding: 8px 4px; border-radius: var(--radius-sm);">
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Total</div>
+              <div id="detailTestTotal" style="font-size: 18px; font-weight: 700;">-</div>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.08); padding: 8px 4px; border-radius: var(--radius-sm);">
+              <div style="font-size: 10px; color: var(--accent-emerald); text-transform: uppercase;">Passed</div>
+              <div id="detailTestPassed" style="font-size: 18px; font-weight: 700; color: var(--accent-emerald);">-</div>
+            </div>
+            <div style="background: rgba(244, 63, 94, 0.08); padding: 8px 4px; border-radius: var(--radius-sm);">
+              <div style="font-size: 10px; color: var(--accent-rose); text-transform: uppercase;">Failed</div>
+              <div id="detailTestFailed" style="font-size: 18px; font-weight: 700; color: var(--accent-rose);">-</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Main Column -->
+      <main>
+        <!-- Regression Areas Card -->
+        <div class="detail-card">
+          <h3>🔍 Identified Regression Areas & Risks</h3>
+          <div id="detailRegressionContainer">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Failure & Self-Healing Fix Section (Shown if failures exist) -->
+        <div id="detailFailureSection" class="detail-card" style="border-color: rgba(244, 63, 94, 0.3); background: rgba(30, 20, 35, 0.7);">
+          <h3 style="color: var(--accent-rose);">🛠️ Self-Healing Debugger: Root-Cause & Code Fix</h3>
+          
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Failing Assertion:</div>
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+              <span class="badge badge-failed" id="detailFailingTestName">TestFailure</span>
+              <span style="font-size: 13px; color: #ffffff;" id="detailErrorMessage">Expected: 0.0, But was: 100.0</span>
+            </div>
+            <pre><code id="detailStackTrace" style="color: #fda4af;">at Character.cpp</code></pre>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Root Cause Diagnosis:</div>
+            <p id="detailRootCause" style="font-size: 14px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-amber);">-</p>
+          </div>
+
+          <div>
+            <div class="code-header">
+              <span>💡 Recommended Synthesized Fix</span>
+              <a id="detailCommitBtn" href="#" target="_blank" class="btn btn-primary btn-sm">
+                <span>Commit suggestion on GitHub ↗</span>
+              </a>
+            </div>
+            <pre><code id="detailFixCode">// Recommended fix code will be shown here</code></pre>
+          </div>
+        </div>
+
+        <!-- Collapsible Generated Tests -->
+        <div class="detail-card">
+          <details>
+            <summary style="cursor: pointer; font-weight: 600; font-size: 15px; color: var(--text-primary); outline: none;">
+              📄 View Generated Game Engine Test Suite
+            </summary>
+            <div style="margin-top: 14px;">
+              <pre><code id="detailTestCode">// Generated automation test code</code></pre>
+            </div>
+          </details>
+        </div>
+
+        <!-- Collapsible Raw JSON Data -->
+        <div class="detail-card">
+          <details>
+            <summary style="cursor: pointer; font-weight: 500; font-size: 13px; color: var(--text-secondary); outline: none;">
+              ⚙️ View Raw Telemetry JSON Record
+            </summary>
+            <div style="margin-top: 14px;">
+              <pre><code id="detailRawJson">{}</code></pre>
+            </div>
+          </details>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

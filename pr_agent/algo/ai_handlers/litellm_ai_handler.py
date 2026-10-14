@@ -152,6 +152,7 @@ _IMAGE_NOT_ALIVE_MESSAGE = (
     "(see [instructions](https://docs.pr-agent.ai/tools/ask/#ask-on-images))."
 )
 OPENAI_DEFAULT_API_BASE = "https://api.openai.com/v1"
+litellm.request_timeout = 360
 
 # Token-count allowances used when estimating the cached prompt prefix for the
 # cache_control_injection_points pre-call warning. Mirrors pr_help_message.py.
@@ -3220,6 +3221,7 @@ class LiteLLMAIHandler(BaseAiHandler):
         # OpenRouter's native router ID; leave other explicit providers unchanged.
         kwargs["model"] = normalize_litellm_model(model, custom_llm_provider)
         force_streaming = self._force_streaming_for_request(custom_llm_provider, kwargs.get("api_base"))
+        kwargs.setdefault("timeout", get_settings().get("CONFIG.LITELLM_REQUEST_TIMEOUT", 360))
 
         # Some OpenAI-compatible endpoints can return an empty-string
         # finish_reason on non-streaming responses, which LiteLLM rejects during

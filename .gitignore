@@ -21,3 +21,6 @@ docs/site/
 .qodo
 poetry.lock
 .log
+runs/
+*.diff
+scratch/

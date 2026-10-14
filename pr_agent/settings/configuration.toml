@@ -167,7 +167,7 @@ description_issue_regex = ""
 
 [pr_reviewer] # /review #
 # enable/disable features
-require_score_review=false
+require_score_review=true
 require_tests_review=true
 require_estimate_effort_to_review=true
 require_can_be_split_review=false
@@ -176,9 +176,9 @@ require_estimate_contribution_time_cost=false
 require_todo_scan=false
 require_ticket_analysis_review=true
 # Opt-in structured assessment fields. Each adds one field to the review output and to the model's output schema.
-require_risk_assessment=false # ask the model for an overall risk level (low/medium/high)
-require_merge_recommendation=false # ask the model for a merge recommendation (safe_to_merge/merge_with_caution/changes_required)
-require_priority_files=false # ask the model which files a human should inspect first
+require_risk_assessment=true # ask the model for an overall risk level (low/medium/high)
+require_merge_recommendation=true # ask the model for a merge recommendation (safe_to_merge/merge_with_caution/changes_required)
+require_priority_files=true # ask the model which files a human should inspect first
 # general options
 publish_output_no_suggestions=true # Set to "false" if you only need the reviewer's remarks (not labels, not "security audit", etc.) and want to avoid noisy "No major issues detected" comments.
 publish_error_details=false # Publish a deterministic, sanitized failure reason in manual review comments. No AI call is used.
@@ -191,7 +191,13 @@ persistent_finding_state=true # Persist review finding state across complete rev
 max_previous_findings_chars = 8000
 
 inline_key_issues=false # Publish each review finding as an inline comment where the provider can verify inline-comment publication (GitHub, Bitbucket Cloud, Azure DevOps, GitLab).
-extra_instructions = ""
+extra_instructions = """
+For Unity C# code reviews:
+1. Regression Areas: Always evaluate downstream regression impact. If any change can affect existing subclasses (e.g. RedCharacter), gameplay balance, or callers, create a finding with issue_header: 'Regression Risk' detailing the exact affected components and failure scenarios.
+2. Performance: Check for anti-patterns in Update() / FixedUpdate() (avoid GetComponent, Find, LINQ, and allocations in hot paths).
+3. Lifecycle: Ensure event listeners in MonoBehaviours are unsubscribed in OnDisable() or OnDestroy() to avoid memory leaks.
+4. Unity Object checks: Watch out for Unity's overloaded null checks on UnityEngine.Object.
+"""
 num_max_findings = 3
 final_update_message = true
 # review labels
@@ -250,11 +256,17 @@ extra_instructions = ""
 
 [pr_code_suggestions] # /improve #
 # Deprecated alias still accepted until 1.0: pr_code_suggestions.commitable_code_suggestions
-committable_code_suggestions = false
+committable_code_suggestions = true
 dual_publishing_score_threshold=-1 # -1 to disable, [0-10] to set the threshold (>=) for publishing a code suggestion both in a table and as committable
 focus_only_on_problems=true
 #
-extra_instructions = ""
+extra_instructions = """
+For Unity C# code suggestions:
+1. STRICT: DO NOT propose redundant boundary checks if Mathf.Max, Mathf.Min, or Mathf.Clamp are already enforcing the range.
+2. Prefer clean, idiomatic Unity C# patterns (e.g. Mathf.Clamp, encapsulated property getters/setters).
+3. Focus strictly on real defects: NullReferenceExceptions, uninitialized fields, or event subscription memory leaks in MonoBehaviours.
+4. Avoid cosmetic or dead-code suggestions. Only output high-confidence, actionable improvements.
+"""
 # Visible base heading for summary-table /improve comments. Identity is tracked separately.
 suggestions_heading = "PR Code Suggestions"
 enable_help_text=false
@@ -264,7 +276,7 @@ max_history_len=4
 publish_output_no_suggestions=true
 enable_suggestions_coverage_footer=true # show failed chunks and files omitted by the token or AI-call budget
 # suggestions scoring
-suggestions_score_threshold=0 # [0-10]| recommend not to set this value above 8, since above it may clip highly relevant suggestions
+suggestions_score_threshold=7 # [0-10]| recommend not to set this value above 8, since above it may clip highly relevant suggestions
 score_on_reflection_failure=7 # [0-10]| score assigned when self-reflection fails or its feedback cannot be parsed; set below suggestions_score_threshold to drop unvetted suggestions
 new_score_mechanism=true
 new_score_mechanism_th_high=9
@@ -621,3 +633,14 @@ webhook_url = "" # used by the "webhook" channel: generic JSON POST target. Must
 slack_webhook_url = "" # used by the "slack" channel: a Slack Incoming Webhook URL. Must be an absolute https:// URL
 telegram_bot_token = "" # used by the "telegram" channel; kept in the fixed api.telegram.org URL path
 telegram_chat_id = "" # used by the "telegram" channel as sendMessage's destination chat
+
+[pr_unity_test_fixer]
+unity_editor_path = "auto" # "auto" searches standard Unity install paths; or specify path to Unity.exe
+project_path = "D:/red_runner" # local path to Unity project
+test_platform = "EditMode" # "EditMode" or "PlayMode"
+tests_output_directory = "Assets/Tests/Generated"
+test_timeout_seconds = 180
+auto_commit_fix = false
+fallback_to_simulation = true # If Unity Editor is not installed locally, run test verification via intelligent simulation
+extra_instructions = ""
+
